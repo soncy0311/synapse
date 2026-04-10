@@ -1,5 +1,7 @@
 # Synapse
 
+[![License: MIT + Commons Clause](https://img.shields.io/badge/License-MIT%20%2B%20Commons%20Clause-blue.svg)](./LICENSE)
+
 AI Agent가 작성하고 유지하는 개인 지식 베이스.
 
 소스를 제공하면 Agent가 읽고, 정제하고, 기존 지식과 통합한다. 지식은 상호 연결된 markdown 노드로 관리되며, LanceDB 기반 semantic search로 빠르게 탐색한다.
@@ -65,3 +67,11 @@ synapse/
 ├── scripts/       # 인덱싱, 검색 스크립트
 └── .lancedb/      # 검색 인덱스 (.gitignore)
 ```
+
+## Roadmap
+
+- [ ] Codex 연동 지원 (Codex를 사용하게 되면 업데이트할 예정)
+
+## License
+
+이 프로젝트는 [MIT + Commons Clause](./LICENSE) 라이선스로 배포됩니다. 자유롭게 사용, 수정, 배포할 수 있지만, 이 소프트웨어를 판매하거나 유료 서비스의 핵심 기능으로 제공하여 수익을 창출하는 것은 금지됩니다.

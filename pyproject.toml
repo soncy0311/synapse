@@ -1,0 +1,21 @@
+[project]
+name = "synapse"
+version = "0.1.0"
+description = "AI Agent 기반 개인 지식 베이스. 소스를 정제하고 통합하여 상호 연결된 markdown 노드로 관리한다."
+readme = "README.md"
+requires-python = "^3.13"
+dependencies = [
+    "lancedb (>=0.30.2,<0.31.0)",
+    "google-genai (>=1.72.0,<2.0.0)",
+    "pyyaml (>=6.0.3,<7.0.0)",
+    "python-dotenv (>=1.2.2,<2.0.0)",
+    "sentence-transformers (>=5.4.0,<6.0.0)",
+    "olefile (>=0.47,<0.48)",
+    "python-docx (>=1.2.0,<2.0.0)",
+    "pymupdf (>=1.27.2.2,<2.0.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

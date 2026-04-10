@@ -65,7 +65,7 @@ status: "draft | active | stale | archived"
 
 | 필드 | 필수 | 설명 |
 |------|------|------|
-| `id` | Y | 전역 고유. kebab-case. 변경 시 모든 참조 업데이트 필요 |
+| `id` | Y | 전역 고유. kebab-case. 파일명과 동일해야 함. 변경 시 모든 참조 업데이트 필요 |
 | `title` | Y | 사람이 읽을 수 있는 제목 |
 | `type` | Y | `source`, `entity`, `concept`, `analysis` 중 하나 |
 | `tags` | Y | 분류 태그 배열. 최소 1개 |
@@ -76,11 +76,28 @@ status: "draft | active | stale | archived"
 | `summary` | Y | 한 줄 요약. embedding 대상 및 검색에 사용 |
 | `status` | Y | 노드 상태 |
 
+#### 파일명 규칙
+
+- 파일명(확장자 제외)은 반드시 frontmatter `id`와 동일해야 한다.
+  - 예: `id: "world-model"` → `docs/concepts/world-model.md`
+  - Obsidian이 `[[wikilink]]`를 파일명으로 resolve하므로, 이 일치가 필수이다.
+
 #### 본문 규칙
 
 - 다른 노드를 참조할 때 `[[node-id]]` wikilink 문법을 사용한다.
-- wikilink는 frontmatter의 links 필드에도 반영되어야 한다.
+- 별칭이 필요하면 `[[node-id|표시 텍스트]]` 형식을 사용한다.
+- wikilink와 frontmatter links는 **양방향 일관성**을 유지해야 한다:
+  - frontmatter `links`에 있는 모든 target은 본문에 `[[target]]` wikilink가 존재해야 한다.
+  - 본문에 `[[node-id]]`가 있으면 frontmatter `links`에도 해당 target이 존재해야 한다.
 - 본문 내 인용은 `> 출처: raw/파일경로` 형식으로 표기한다.
+- 본문 **마지막에 "관련 노드" 섹션**을 반드시 포함한다. frontmatter links의 모든 target을 wikilink로 나열한다:
+  ```markdown
+  ## 관련 노드
+
+  - [[target-id]] — 한 줄 설명
+  ```
+  - 본문 중간에 이미 inline으로 참조한 노드도 "관련 노드" 섹션에 중복 나열한다.
+  - 이 섹션은 Obsidian Graph View와 Backlinks의 신뢰성을 보장한다.
 
 #### 노드 타입별 가이드
 
@@ -91,12 +108,13 @@ status: "draft | active | stale | archived"
 
 ### Step 4: 수집 절차
 
-1. docs/sources/에 소스 요약 페이지를 생성한다 (frontmatter 포함).
+1. docs/sources/에 소스 요약 페이지를 생성한다 (frontmatter 포함, 파일명 = id).
 2. 본문에서 언급된 엔티티/개념을 식별한다.
 3. 기존 엔티티/개념 페이지가 있으면 새 정보로 **업데이트**한다.
-4. 없으면 새 페이지를 **생성**한다.
+4. 없으면 새 페이지를 **생성**한다 (파일명 = id).
 5. 새로운 정보가 기존 주장과 **모순**되면 → 아래 "모순 및 충돌 처리" 절차를 따른다.
 6. 모든 관련 페이지에 wikilink와 frontmatter links를 추가한다.
+7. 모든 생성/수정 페이지의 **마지막에 "관련 노드" 섹션**이 있는지 확인하고, 없으면 추가한다.
 
 ### Step 5: frontmatter 검증
 

@@ -107,6 +107,33 @@ validate_file() {
     done < <(echo "$fm" | grep -E "^\s+relation:")
   fi
 
+  # 파일명 = id 일치 확인 (Obsidian 호환)
+  local file_stem
+  file_stem=$(basename "$file" .md)
+  if [ "$file_stem" != "$id_val" ]; then
+    errors+=("파일명('${file_stem}')과 id('${id_val}')가 불일치 (Obsidian wikilink 해석 불가)")
+  fi
+
+  # frontmatter links의 target이 본문에 [[wikilink]]로 존재하는지 확인
+  local body
+  body=$(sed -n '/^---$/,/^---$/!p' "$file" | tail -n +2)
+  if echo "$fm" | grep -qE "^\s+- target:"; then
+    while IFS= read -r target_line; do
+      local target_val
+      target_val=$(echo "$target_line" | sed 's/.*target: *"\{0,1\}//' | sed 's/"\{0,1\} *$//')
+      if [ -n "$target_val" ]; then
+        if ! echo "$body" | grep -qE "\[\[${target_val}(\|[^]]+)?\]\]"; then
+          errors+=("frontmatter link target '${target_val}'에 대한 [[wikilink]]가 본문에 없습니다")
+        fi
+      fi
+    done < <(echo "$fm" | grep -E "^\s+- target:")
+  fi
+
+  # "관련 노드" 섹션 존재 확인
+  if ! echo "$body" | grep -qE "^## 관련 노드"; then
+    errors+=("'## 관련 노드' 섹션이 없습니다 (Obsidian Graph View 호환 필수)")
+  fi
+
   # 결과 출력
   if [ ${#errors[@]} -gt 0 ]; then
     printf "\nFAIL %s\n" "$file"

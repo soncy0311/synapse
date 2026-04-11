@@ -1,8 +1,8 @@
 .PHONY: index index-file search install validate validate-file
 
-# 의존성 설치
+# 의존성 설치 (poetry >= 2. 호환)
 install:
-	poetry install
+	poetry install --no-root
 
 # 전체 인덱스 재구축
 index:

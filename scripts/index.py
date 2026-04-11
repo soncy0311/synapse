@@ -7,11 +7,23 @@ Usage:
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
 import lancedb
 import yaml
+
+# Obsidian wikilink 패턴: [[node-id]] 또는 [[node-id|alias]]
+WIKILINK_RE = re.compile(r"^\[\[([^\]|]+)(?:\|[^\]]*)?\]\]$")
+
+
+def parse_wikilink(s: str) -> str | None:
+    """Wikilink 문자열에서 node id를 추출한다. 형식이 다르면 None."""
+    if not isinstance(s, str):
+        return None
+    m = WIKILINK_RE.match(s.strip())
+    return m.group(1).strip() if m else None
 
 from dotenv import load_dotenv
 from pathlib import Path as _Path
@@ -50,9 +62,16 @@ def parse_frontmatter(filepath: Path) -> dict | None:
 
 def node_to_record(meta: dict, filepath: Path) -> dict:
     """파싱된 frontmatter + 본문을 LanceDB 레코드로 변환한다."""
+    # frontmatter links는 Obsidian 호환 wikilink flat list 형식: ["[[node-id]]", ...]
+    # 관계의 성격(extends/contradicts/...)은 본문 prose에서 LLM이 판단한다.
     links_raw = meta.get("links", []) or []
-    link_targets = [l["target"] for l in links_raw if isinstance(l, dict)]
-    link_relations = [l.get("relation", "relates_to") for l in links_raw if isinstance(l, dict)]
+    link_targets: list[str] = []
+    for item in links_raw:
+        target = parse_wikilink(item)
+        if target:
+            link_targets.append(target)
+        else:
+            print(f"  warn: {filepath.name}: 잘못된 link 형식 (wikilink 필요): {item!r}")
 
     rel_path = str(filepath.relative_to(PROJECT_ROOT))
 
@@ -70,7 +89,6 @@ def node_to_record(meta: dict, filepath: Path) -> dict:
         "type": meta.get("type", ""),
         "tags": json.dumps(meta.get("tags", []), ensure_ascii=False),
         "links": json.dumps(link_targets, ensure_ascii=False),
-        "relations": json.dumps(link_relations, ensure_ascii=False),
         "sources": json.dumps(meta.get("sources", []), ensure_ascii=False),
         "path": rel_path,
         "summary": summary,

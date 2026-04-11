@@ -10,7 +10,6 @@ set -euo pipefail
 REQUIRED_FIELDS=(id title type tags created updated summary status)
 VALID_TYPES="source|entity|concept|analysis"
 VALID_STATUSES="draft|active|stale|archived"
-VALID_RELATIONS="relates_to|depends_on|contradicts|extends|part_of"
 
 total=0
 failed=0
@@ -97,17 +96,6 @@ validate_file() {
     errors+=("summary가 비어있습니다")
   fi
 
-  # links: 존재하면 relation 유효값 확인
-  if echo "$fm" | grep -qE "^\s+relation:"; then
-    while IFS= read -r rel_line; do
-      local rel_val
-      rel_val=$(echo "$rel_line" | sed 's/.*relation: *"\{0,1\}//' | sed 's/"\{0,1\} *$//')
-      if ! echo "$rel_val" | grep -qE "^(${VALID_RELATIONS})$"; then
-        errors+=("잘못된 relation: '${rel_val}'")
-      fi
-    done < <(echo "$fm" | grep -E "^\s+relation:")
-  fi
-
   # 파일명 = id 일치 확인 (Obsidian 호환)
   local file_stem
   file_stem=$(basename "$file" .md)
@@ -115,25 +103,33 @@ validate_file() {
     errors+=("파일명('${file_stem}')과 id('${id_val}')가 불일치 (Obsidian wikilink 해석 불가)")
   fi
 
-  # frontmatter links의 target이 본문에 [[wikilink]]로 존재하는지 확인
+  # frontmatter links의 wikilink target이 본문에 [[wikilink]]로 존재하는지 확인
   # awk 사용: BSD/GNU sed 모두 호환 (macOS + Linux)
+  # frontmatter links 형식: - "[[node-id]]" 또는 - "[[node-id|alias]]"
   local body
   body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2{print}' "$file")
-  if echo "$fm" | grep -qE "^\s+- target:"; then
-    while IFS= read -r target_line; do
+  if echo "$fm" | grep -qE '^\s+- *"\[\['; then
+    while IFS= read -r link_line; do
       local target_val
-      target_val=$(echo "$target_line" | sed 's/.*target: *"\{0,1\}//' | sed 's/"\{0,1\} *$//')
+      target_val=$(echo "$link_line" | sed -E 's/.*- *"?\[\[([^]|]+)(\|[^]]*)?\]\]"?.*/\1/')
       if [ -n "$target_val" ]; then
         if ! echo "$body" | grep -qE "\[\[${target_val}(\|[^]]+)?\]\]"; then
-          errors+=("frontmatter link target '${target_val}'에 대한 [[wikilink]]가 본문에 없습니다")
+          errors+=("frontmatter link '${target_val}'에 대한 [[wikilink]]가 본문에 없습니다")
         fi
       fi
-    done < <(echo "$fm" | grep -E "^\s+- target:")
+    done < <(echo "$fm" | grep -E '^\s+- *"\[\[')
   fi
 
-  # "관련 노드" 섹션 존재 확인
-  if ! echo "$body" | grep -qE "^## 관련 노드"; then
-    errors+=("'## 관련 노드' 섹션이 없습니다 (Obsidian Graph View 호환 필수)")
+  # frontmatter에 레거시 {target, relation} dict 형식이 남아있는지 검사
+  if echo "$fm" | grep -qE '^\s+- target:' || echo "$fm" | grep -qE '^\s+relation:'; then
+    errors+=("frontmatter links에 레거시 {target, relation} 형식이 남아있습니다. wikilink flat list로 변경 필요")
+  fi
+
+  # frontmatter links가 있으면 "관련 노드" 섹션이 존재해야 한다
+  if echo "$fm" | grep -qE '^\s+- *"\[\['; then
+    if ! echo "$body" | grep -qE "^## 관련 노드"; then
+      errors+=("frontmatter에 links가 있으나 '## 관련 노드' 섹션이 없습니다")
+    fi
   fi
 
   # 결과 출력

@@ -22,8 +22,7 @@ class Node(LanceModel):
     title: str
     type: str  # source | entity | concept | analysis
     tags: str  # JSON 배열 문자열 (LanceDB 필터링용)
-    links: str  # JSON 배열 문자열 (fan-out용)
-    relations: str  # JSON 배열 문자열 (links와 1:1 대응)
+    links: str  # JSON 배열 문자열 (fan-out용, wikilink에서 추출한 node id)
     sources: str  # JSON 배열 문자열
     path: str  # docs/ 내 파일 경로
     status: str  # draft | active | stale | archived

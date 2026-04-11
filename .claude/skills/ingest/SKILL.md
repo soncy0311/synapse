@@ -50,8 +50,8 @@ title: "페이지 제목"
 type: "source | entity | concept | analysis"
 tags: ["태그1", "태그2"]
 links:
-  - target: "연결된 노드 id"
-    relation: "relates_to | depends_on | contradicts | extends | part_of"
+  - "[[연결된-노드-id]]"
+  - "[[다른-노드-id]]"
 sources:
   - "raw/파일경로"
 created: "YYYY-MM-DD"
@@ -69,7 +69,7 @@ status: "draft | active | stale | archived"
 | `title` | Y | 사람이 읽을 수 있는 제목 |
 | `type` | Y | `source`, `entity`, `concept`, `analysis` 중 하나 |
 | `tags` | Y | 분류 태그 배열. 최소 1개 |
-| `links` | N | 관련 노드. target은 대상 노드의 id, relation은 관계 유형 |
+| `links` | N | 관련 노드의 wikilink flat list. `"[[node-id]]"` 형식. 관계의 성격은 본문에서 설명한다 |
 | `sources` | N | 이 노드의 근거가 되는 raw/ 파일 경로 |
 | `created` | Y | 생성일 |
 | `updated` | Y | 최종 수정일 |
@@ -90,14 +90,16 @@ status: "draft | active | stale | archived"
   - frontmatter `links`에 있는 모든 target은 본문에 `[[target]]` wikilink가 존재해야 한다.
   - 본문에 `[[node-id]]`가 있으면 frontmatter `links`에도 해당 target이 존재해야 한다.
 - 본문 내 인용은 `> 출처: raw/파일경로` 형식으로 표기한다.
-- 본문 **마지막에 "관련 노드" 섹션**을 반드시 포함한다. frontmatter links의 모든 target을 wikilink로 나열한다:
+- **frontmatter `links`에 항목이 있을 경우**, 본문 마지막에 "관련 노드" 섹션을 두고 `links`의 **모든 항목**을 wikilink로 나열하며 **한 줄 설명으로 관계의 성격을 표현한다**:
   ```markdown
   ## 관련 노드
 
-  - [[target-id]] — 한 줄 설명
+  - [[target-id]] — 이 노드가 해결하는 상위 문제
+  - [[other-id]] — 본 주장과 모순되는 근거
+  - [[third-id]] — 구현이 기반하는 기술
   ```
   - 본문 중간에 이미 inline으로 참조한 노드도 "관련 노드" 섹션에 중복 나열한다.
-  - 이 섹션은 Obsidian Graph View와 Backlinks의 신뢰성을 보장한다.
+  - `links`가 비어 있으면 이 섹션을 두지 않아도 된다.
 
 #### 노드 타입별 가이드
 
@@ -114,7 +116,7 @@ status: "draft | active | stale | archived"
 4. 없으면 새 페이지를 **생성**한다 (파일명 = id).
 5. 새로운 정보가 기존 주장과 **모순**되면 → 아래 "모순 및 충돌 처리" 절차를 따른다.
 6. 모든 관련 페이지에 wikilink와 frontmatter links를 추가한다.
-7. 모든 생성/수정 페이지의 **마지막에 "관련 노드" 섹션**이 있는지 확인하고, 없으면 추가한다.
+7. frontmatter `links`에 항목이 있는 페이지는 본문 마지막의 "관련 노드" 섹션에 `links`의 모든 항목이 빠짐없이 나열되어 있는지 확인한다.
 
 ### Step 5: frontmatter 검증
 
@@ -162,4 +164,4 @@ make index
 
 - Agent는 모순을 발견해도 **절대 독단적으로 기존 내용을 수정하거나 삭제하지 않는다.**
 - 사소한 표현 차이는 충돌이 아니다. 핵심 주장이나 사실관계가 다를 때만 이 절차를 따른다.
-- 사용자가 병기를 선택한 경우 frontmatter links에 `contradicts` relation으로 기록한다.
+- 사용자가 병기를 선택한 경우 양쪽 노드의 "관련 노드" 섹션에 상대 노드를 wikilink로 추가하고, 한 줄 설명에 **모순/충돌 관계임을 명시**한다 (예: `— 본 주장과 모순되는 출처`).

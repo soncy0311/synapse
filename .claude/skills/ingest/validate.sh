@@ -28,8 +28,9 @@ validate_file() {
   fi
 
   # frontmatter 추출 (첫 번째 --- 와 두 번째 --- 사이)
+  # awk 사용: BSD/GNU sed 모두 호환 (macOS + Linux)
   local fm
-  fm=$(sed -n '1,/^---$/!b; /^---$/,/^---$/{ /^---$/d; p }' "$file" | head -100)
+  fm=$(awk 'BEGIN{c=0} /^---$/{c++; if(c==2) exit; next} c==1{print}' "$file" | head -100)
 
   if [ -z "$fm" ]; then
     errors+=("frontmatter가 닫히지 않았습니다")
@@ -115,8 +116,9 @@ validate_file() {
   fi
 
   # frontmatter links의 target이 본문에 [[wikilink]]로 존재하는지 확인
+  # awk 사용: BSD/GNU sed 모두 호환 (macOS + Linux)
   local body
-  body=$(sed -n '/^---$/,/^---$/!p' "$file" | tail -n +2)
+  body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2{print}' "$file")
   if echo "$fm" | grep -qE "^\s+- target:"; then
     while IFS= read -r target_line; do
       local target_val

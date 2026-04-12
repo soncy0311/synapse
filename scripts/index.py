@@ -87,6 +87,7 @@ def node_to_record(meta: dict, filepath: Path) -> dict:
         "id": meta["id"],
         "title": meta.get("title", ""),
         "type": meta.get("type", ""),
+        "group": meta.get("group", ""),
         "tags": json.dumps(meta.get("tags", []), ensure_ascii=False),
         "links": json.dumps(link_targets, ensure_ascii=False),
         "sources": json.dumps(meta.get("sources", []), ensure_ascii=False),

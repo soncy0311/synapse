@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-REQUIRED_FIELDS=(id title type tags created updated summary status)
+REQUIRED_FIELDS=(id title type group tags created updated summary status)
 VALID_TYPES="source|entity|concept|analysis"
 VALID_STATUSES="draft|active|stale|archived"
 

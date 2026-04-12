@@ -21,6 +21,7 @@ class Node(LanceModel):
     id: str
     title: str
     type: str  # source | entity | concept | analysis
+    group: str  # development/server | development/client | ...
     tags: str  # JSON 배열 문자열 (LanceDB 필터링용)
     links: str  # JSON 배열 문자열 (fan-out용, wikilink에서 추출한 node id)
     sources: str  # JSON 배열 문자열

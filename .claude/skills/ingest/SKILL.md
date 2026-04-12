@@ -50,6 +50,7 @@ make search Q="<소스의 핵심 주제>" OPTS="--fanout --json"
 id: "고유 식별자 (kebab-case)"
 title: "페이지 제목"
 type: "source | entity | concept | analysis"
+group: "level1/level2 형식의 분류 그룹"
 tags: ["태그1", "태그2"]
 links:
   - "[[연결된-노드-id]]"
@@ -70,6 +71,7 @@ status: "draft | active | stale | archived"
 | `id` | Y | 전역 고유. kebab-case. 파일명과 동일해야 함. 변경 시 모든 참조 업데이트 필요 |
 | `title` | Y | 사람이 읽을 수 있는 제목 |
 | `type` | Y | `source`, `entity`, `concept`, `analysis` 중 하나 |
+| `group` | Y | Obsidian 그래프 시각화용 분류. `/`로 계층을 구분한다. 기존 docs/ 파일들의 group 값을 참고하되, 적합한 group이 없으면 새로 만들 수 있다 |
 | `tags` | Y | 분류 태그 배열. 최소 1개 |
 | `links` | N | 관련 노드의 wikilink flat list. `"[[node-id]]"` 형식. 관계의 성격은 본문에서 설명한다 |
 | `sources` | N | 이 노드의 근거가 되는 raw/ 파일 경로 |

@@ -1,7 +1,8 @@
-.PHONY: index index-file search install validate validate-file
+.PHONY: index index-file search install validate validate-file parse
 
 # 의존성 설치 (poetry >= 2. 호환)
 install:
+	poetry env use python3.13
 	poetry install --no-root
 
 # 전체 인덱스 재구축
@@ -21,10 +22,14 @@ index-file:
 search:
 	poetry run python -m scripts.search "$(Q)" $(OPTS)
 
+# 바이너리 파일 텍스트 추출 (사용법: make parse FILE=raw/user/report.hwp)
+parse:
+	poetry run python -c "from lib import parse; print(parse('$(FILE)'))"
+
 # frontmatter 검증 (전체)
 validate:
-	bash .claude/skills/ingest/validate.sh docs/
+	bash .claude/skills/scripts/validate.sh docs/
 
 # frontmatter 검증 (단일 파일, 사용법: make validate-file FILE=docs/entities/lancedb.md)
 validate-file:
-	bash .claude/skills/ingest/validate.sh $(FILE)
+	bash .claude/skills/scripts/validate.sh $(FILE)

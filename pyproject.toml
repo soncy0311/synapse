@@ -1,6 +1,6 @@
 [project]
 name = "synapse"
-version = "0.1.0"
+version = "0.1.1"
 description = "AI Agent 기반 개인 지식 베이스. 소스를 정제하고 통합하여 상호 연결된 markdown 노드로 관리한다."
 readme = "README.md"
 requires-python = "^3.13"

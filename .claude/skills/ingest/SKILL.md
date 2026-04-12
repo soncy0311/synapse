@@ -23,11 +23,13 @@ raw/ 소스를 읽고 docs/에 정제된 지식 노드를 생성/업데이트하
 
 지정된 raw 파일을 읽고 핵심 내용을 파악한다.
 
-**바이너리 파일(.hwp, .docx, .pdf)인 경우** lib/ 파서를 사용하여 텍스트를 추출한다:
+**바이너리 파일(.hwp, .docx, .pdf)인 경우** `/parse` 스킬을 사용하여 markdown으로 변환한다:
 
-```bash
-poetry run python -c "from lib import parse; print(parse('<파일 경로>'))"
 ```
+/parse <파일 경로>
+```
+
+변환 완료 후 생성된 markdown 파일을 소스로 사용하여 이후 단계를 진행한다.
 
 ### Step 2: 기존 지식 확인
 

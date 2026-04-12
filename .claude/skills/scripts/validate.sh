@@ -2,8 +2,8 @@
 # docs/ 노드의 YAML frontmatter 유효성을 검증한다.
 #
 # Usage:
-#   bash .claude/skills/ingest/validate.sh docs/entities/lancedb.md
-#   bash .claude/skills/ingest/validate.sh docs/  # 디렉토리 전체
+#   bash .claude/skills/scripts/validate.sh docs/entities/lancedb.md
+#   bash .claude/skills/scripts/validate.sh docs/  # 디렉토리 전체
 
 set -euo pipefail
 

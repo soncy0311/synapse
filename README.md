@@ -42,14 +42,69 @@ cp env/.env.example env/.env
 
 Claude Code에서 slash command로 사용한다.
 
-| 명령 | 설명 |
-|------|------|
-| `/ingest <raw 파일 경로>` | 소스를 읽고 지식 노드를 생성/업데이트 |
-| `/search <쿼리>` | 지식 베이스에서 semantic search |
-| `/parse <파일 경로>` | HWP, DOCX, PDF에서 텍스트 추출 |
-| `/index` | LanceDB 인덱스 구축/갱신 |
-| `/update` | docs/ 폴더 및 파일 구조 점검/업데이트 |
-| `/lint` | 지식 베이스 건강 상태 점검 및 수정 |
+### `/ingest <raw 파일 경로>` — 소스 수집
+
+raw/ 소스를 읽고 docs/에 지식 노드를 생성/업데이트한다. 기존 지식과 통합하고, 모순 발견 시 사용자에게 보고한다. 바이너리 파일은 자동으로 `/parse`를 거친 후 수집한다.
+
+```
+/ingest raw/user/article.md          # 사용자가 제공한 소스 수집
+/ingest raw/agents/2026-04-10_research.md   # Agent가 리서치한 소스 수집
+```
+
+### `/search <쿼리>` — 지식 검색
+
+LanceDB semantic search + 연결 노드 fan-out으로 종합 답변한다. 지식 베이스에 관련 내용이 부족하면 웹 리서치를 제안한다.
+
+```
+/search 벡터 데이터베이스           # 개념 검색
+/search 인증 시스템 보안 설계       # 주제 탐색
+```
+
+### `/parse <파일 경로>` — 바이너리 파싱
+
+HWP, DOCX, PDF에서 텍스트를 추출하여 동일 위치에 markdown으로 저장하고, 원본 바이너리를 삭제한다.
+
+```
+/parse raw/user/report.hwp      # HWP → report.md
+/parse raw/user/paper.pdf       # PDF → paper.md
+/parse raw/agents/research.docx # DOCX → research.md
+```
+
+### `/index [--file <path>]` — 인덱스 갱신
+
+docs/ 파일로부터 LanceDB 검색 인덱스를 구축/갱신한다. 인자 없이 실행하면 전체 재구축, `--file`로 단일 파일만 upsert할 수 있다.
+
+```
+/index                              # 전체 재구축
+/index --file docs/entities/lancedb.md   # 단일 파일 upsert
+```
+
+### `/update` — 구조 점검
+
+docs/ 폴더 및 파일 구조를 점검하고, 카테고리 포화·빈 디렉토리·파일명 불일치 등 필요한 구조 변경을 제안/실행한다.
+
+```
+/update
+```
+
+### `/merge [PR 번호...]` — PR 병합
+
+main 대상 PR을 순차 병합하고, 병합 후 지식 베이스 일관성(중복 노드·교차참조 누락·내용 모순)을 점검·수정한다.
+
+```
+/merge              # 열린 PR 전체를 순차 병합
+/merge 42           # 특정 PR만 병합
+/merge 42 45 48     # 지정된 PR들을 순차 병합
+```
+
+### `/lint` — 건강 점검
+
+지식 베이스 전반을 점검한다. 모순, stale/고아 노드, 누락된 교차 참조, 인덱스 불일치 등을 발견하고 자동 수정 가능한 항목은 수정, 판단이 필요한 항목은 사용자에게 보고한다.
+
+```
+/lint
+```
+
 
 ## 디렉토리 구조
 

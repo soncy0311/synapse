@@ -44,11 +44,22 @@ Claude Code에서 slash command로 사용한다.
 
 ### `/ingest <raw 파일 경로>` — 소스 수집
 
-raw/ 소스를 읽고 docs/에 지식 노드를 생성/업데이트한다. 기존 지식과 통합하고, 모순 발견 시 사용자에게 보고한다. 바이너리 파일은 자동으로 `/parse`를 거친 후 수집한다.
+raw/ 소스를 읽고 docs/{sources,entities,concepts,analyses}/에 지식 노드를 생성/업데이트한다. 기존 지식과 통합하고, 모순 발견 시 사용자에게 보고한다. 바이너리 파일은 자동으로 `/parse`를 거친 후 수집한다.
 
 ```
 /ingest raw/user/article.md          # 사용자가 제공한 소스 수집
 /ingest raw/agents/2026-04-10_research.md   # Agent가 리서치한 소스 수집
+```
+
+### `/ideation [주제 slug]` — 아이디에이션 정리
+
+사용자와의 탐색적 대화를 보존한다. 대화 원본을 `raw/agents/`에 저장하고, 결정·제약·열린 질문을 정제하여 `docs/note/`에 아이디에이션 노트로 남긴다. LanceDB에 인덱싱되어 `/search`로 검색된다. **기존 지식 그래프 노드는 수정하지 않고 참조만 한다.**
+
+`/ingest`와의 차이: `/ingest`는 객관적 지식을 그래프에 편입하고 기존 노드를 수정/확장, `/ideation`은 주관적 탐색을 단방향 참조로만 연결.
+
+```
+/ideation                              # 현재 대화를 자동 주제 추출로 정리
+/ideation 2d-pixel-topdown-pipeline    # 주제 slug 지정
 ```
 
 ### `/search <쿼리>` — 지식 검색
@@ -112,12 +123,13 @@ main 대상 PR을 순차 병합하고, 병합 후 지식 베이스 일관성(중
 synapse/
 ├── raw/           # 원시 소스
 │   ├── user/      # 사용자 제공 (불변)
-│   └── agents/    # Agent 수집
-├── docs/          # 정제된 지식 노드
+│   └── agents/    # Agent 수집 + 대화 기록
+├── docs/          # 정제된 지식 노드 (모두 LanceDB 인덱싱)
 │   ├── sources/   # 소스 요약
 │   ├── entities/  # 엔티티 (도구, 프로젝트 등)
 │   ├── concepts/  # 개념
-│   └── analyses/  # 비교 분석, 종합
+│   ├── analyses/  # 비교 분석, 종합
+│   └── note/      # 아이디에이션 노트 (탐색 단계 기록)
 ├── lib/           # 파일 파서
 ├── scripts/       # 인덱싱, 검색 스크립트
 └── .lancedb/      # 검색 인덱스 (.gitignore)

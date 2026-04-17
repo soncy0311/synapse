@@ -28,12 +28,13 @@ synapse/
 ├── CLAUDE.md          # 이 파일. 스키마 및 운영 규칙
 ├── raw/               # 원시 소스
 │   ├── user/          # 사용자가 제공한 소스 (Agent 수정 금지)
-│   └── agents/        # Agent가 리서치하여 수집한 소스
+│   └── agents/        # Agent가 리서치하여 수집한 소스 + 대화 기록
 ├── docs/              # 정제된 지식 노드 (Agent가 소유)
 │   ├── sources/       # 소스별 요약 페이지
 │   ├── entities/      # 엔티티(도구, 프로젝트, 사람 등) 페이지
 │   ├── concepts/      # 개념 페이지
-│   └── analyses/      # 질의 결과, 비교, 종합 페이지
+│   ├── analyses/      # 질의 결과, 비교, 종합 페이지
+│   └── note/          # 사용자 아이디에이션 노트 (탐색 단계 기록)
 ├── lib/               # 파일 파서 라이브러리 (HWP, DOCX, PDF)
 ├── scripts/           # 유틸리티 스크립트 (인덱싱, 검색 등)
 └── .lancedb/          # LanceDB 데이터 디렉토리 (.gitignore)
@@ -81,7 +82,8 @@ LanceDB의 데이터 디렉토리. docs/ 파일에서 파생되므로 Git에 포
 ## Skills
 
 - `/search <쿼리>` — semantic search + fan-out. 결과 부족 시 리서치를 제안한다.
-- `/ingest <raw 파일 경로>` — raw/ 소스를 읽고 docs/에 지식 노드를 생성/업데이트한다.
+- `/ingest <raw 파일 경로>` — raw/ 소스를 읽고 docs/{sources,entities,concepts,analyses}/에 지식 노드를 생성/업데이트한다.
+- `/ideation [주제 slug]` — 사용자와의 대화를 raw/agents/에 저장하고 docs/note/에 아이디에이션 노트를 정리한다. 지식 그래프는 건드리지 않는다.
 - `/parse <파일 경로>` — HWP, DOCX, PDF 등 바이너리 파일에서 텍스트를 추출한다.
 - `/index` — docs/ 파일들로부터 LanceDB 인덱스를 구축/갱신한다. docs/ 문서가 생성/수정/삭제되거나 git pull 후 docs/ 변경이 있으면 반드시 실행한다.
 - `/update` — docs/ 폴더 및 파일 구조를 점검하고, 새로운 폴더나 파일 구조가 필요한지 파악하여 업데이트한다.
@@ -109,6 +111,20 @@ LanceDB의 데이터 디렉토리. docs/ 파일에서 파생되므로 Git에 포
 2. 조사 결과를 `raw/agents/`에 원시 소스 파일로 저장한다.
 3. 사용자에게 해당 raw 파일에 대해 `/ingest`를 진행할지 확인한다.
 4. 사용자가 동의하면 `/ingest`로 docs/에 지식 노드를 생성/업데이트한다.
+
+### 아이디에이션
+
+사용자가 **결정을 확정하지 않은 탐색 단계**의 대화를 보존하는 워크플로우:
+
+1. 사용자와 자유롭게 대화하며 옵션, 트레이드오프, 제약을 탐색한다.
+2. 사용자가 "정리해줘", "노트로 남겨줘" 등을 요청하면 `/ideation`을 실행한다.
+3. `/ideation`은 다음을 수행:
+   - `raw/agents/{date}_{topic}-dialogue.md`에 대화 원본 저장
+   - `docs/note/{topic}.md`에 결정/제약/열린 질문을 정제 (LanceDB 인덱싱)
+   - 기존 지식 노드는 **수정하지 않고 `links`로 단방향 참조만**
+4. 결정이 확정되어 지식화가 필요해지면 그때 별도로 `/ingest`를 실행한다.
+
+**`/ingest`와의 차이**: `/ingest`는 객관적 지식을 그래프에 편입하고 기존 노드를 수정/확장, `/ideation`은 주관적 탐색을 단방향 참조로만 연결한다.
 
 ---
 
